@@ -7,71 +7,44 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 import random
-# dataset = load_dataset("naver-clova-ix/cord-v2")
-
-
-
-# example = dataset['train'][0]
-# image = example['image']
-# let's make the image a bit smaller when visualizing
-# width, height = image.size
-
-
-# let's load the corresponding JSON dictionary (as string representation)
-# ground_truth = example['ground_truth']
-# print(ground_truth)
-
-# from ast import literal_eval
-
-# literal_eval(ground_truth)['gt_parse']
-
-
 from transformers import Pix2StructForConditionalGeneration, AutoProcessor
 
-# repo_id = "google/pix2struct-docvqa-base"
-# repo_id = "/home/ubuntu/akshat/finetuning/latest_model_4_75"
-repo_id = "/home/ubuntu/pix2struct_finetining/sidharth16_finetuned_endocqa_finetuned_on_all_arabic_data_conti"
-# repo_id = "docvqa_v4_17th_nov_10_epochs"
+
+repo_id = os.getenv("MODEL_PATH")
 processor = AutoProcessor.from_pretrained(repo_id)
 model = Pix2StructForConditionalGeneration.from_pretrained(repo_id, is_encoder_decoder=True)
 processor.image_processor.is_vqa = True
 
 
-# with open("/home/ubuntu/pix2stuct_finetuning_project/ara_intern_docvqa/final_train_listdata.json", "r") as f:
-#       train_json_list = json.load(f)
-# with open("/home/ubuntu/pix2stuct_finetuning_project/ara_intern_docvqa/final_val_listdata.json", "r") as f:
-#       test_json_list = json.load(f)
 
-# with open("/home/ubuntu/pix2stuct_finetuning_project/16th_nov_data/intern_data/final_train_shortlong.json", "r") as f:
-#       train_json_sl= json.load(f)
-# with open("/home/ubuntu/pix2stuct_finetuning_project/16th_nov_data/intern_data/final_val_shortlong.json", "r") as f:
-#       test_json_sl = json.load(f)
+data_dir = os.getenv('DATA_DIR')
+train_file_path = os.path.join(data_dir, 'train.json')
+test_file_path = os.path.join(data_dir, 'test.json')
+
+if not os.path.exists(train_file_path):
+      raise FileNotFoundError(f"File not found: {train_file_path}")
+if not os.path.exists(test_file_path):
+      raise FileNotFoundError(f"File not found: {test_file_path}")
+
+with open(train_file_path, 'r') as f:
+    train_data = json.load(f)
+
+with open(test_file_path, 'r') as f:
+    test_data = json.load(f)
       
-# with open("/home/ubuntu/pix2stuct_finetuning_project/16th_nov_data/hrsd/hrsd_looking_documents_train.json", "r") as f:
-#       train_json_hrsd= json.load(f)
-# with open("/home/ubuntu/pix2stuct_finetuning_project/16th_nov_data/hrsd/hrsd_looking_documents_val.json", "r") as f:
-#       test_json_hrsd = json.load(f)
-# train_json = train_json_list+train_json_sl+train_json_hrsd
-# test_json = test_json_list+test_json_sl+test_json_hrsd
-with open("/home/ubuntu/pix2struct_finetining/invest_bank_data/data_sep_train.json", "r") as f:
-      train_json_edc_en= json.load(f)
-with open("/home/ubuntu/pix2struct_finetining/invest_bank_data/data_sep_test.json", "r") as f:
-      test_json_edc_en = json.load(f)
-      
-# with open("/home/ubuntu/pix2struct_finetining/data/all_jsons/rta2_train_data.json", "r") as f:
-#       train_json_edc_ar_en= json.load(f)
-# with open("/home/ubuntu/pix2struct_finetining/data/all_jsons/rta2_test_data.json", "r") as f:
-#       test_json_edc_ar_en = json.load(f)
-      
-train_json = train_json_edc_en + test_json_edc_en
-test_json = train_json 
+train_json = train_data
+test_json = test_data 
 
 random.shuffle(train_json)
 random.shuffle(test_json)
+
+max_patches = int(os.getenv('MAX_PATCHES', 3584))
+max_length = int(os.getenv('MAX_LENGTH', 256))
+
 train_dataset = ImageCaptioningDataset(train_json, processor, model,
-                                       split="train", sort_json_key=False) # cord dataset is preprocessed, so no need for this
+                                       max_patches=max_patches, max_length=max_length) 
 val_dataset = ImageCaptioningDataset(test_json, processor, model,
-                                       split="validation", sort_json_key=False) # cord dataset is preprocessed, so no need for this
+                                       max_patches=max_patches, max_length=max_length) 
      
 encoding, target_sequence = train_dataset[0]
 print(encoding.keys())
@@ -147,7 +120,6 @@ trainer = pl.Trainer(
 )
 
 
-# trainer.fit(pl_module, ckpt_path = "/home/ubuntu/akshat/finetuning/outputs/aradocvqa-epoch=10-train_loss=0.01.ckpt")
 trainer.fit(pl_module)
 
 
