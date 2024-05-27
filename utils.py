@@ -75,7 +75,7 @@ class ImageCaptioningDataset(Dataset):
 
         # img_path = os.path.join("/home/ubuntu/akshat/ara_intern_docvqa/master_compiled_images", doc_id)
         img = Image.open(img_path)
-        encoding = self.processor(images=img, text = item["question"], max_patches=self.max_patches, return_tensors="pt")
+        encoding = self.processor(images=img, text = item["question"], max_patches=self.max_patches, return_tensors="pt", font_path = "/usr/src/app/Arial.TTF")
         encoding = {k:v.squeeze() for k,v in encoding.items()}
         # prepare targets
         # target_sequence = random.choice(self.gt_token_sequences[idx])  # can be more than one, e.g., DocVQA Task 1
@@ -124,7 +124,7 @@ class Pix2Struct(pl.LightningModule):
         outputs = self.model.generate(flattened_patches=flattened_patches,
                                       attention_mask=attention_mask,
                                       # decoder_input_ids=decoder_input_ids,
-                                      max_new_tokens=512,
+                                      max_new_tokens=256,
                                       min_length = 1,
                                       return_dict_in_generate=True,)
     
@@ -149,6 +149,14 @@ class Pix2Struct(pl.LightningModule):
 
         self.log("val_edit_distance", np.mean(scores)) 
         
+        # score_file_path = os.path.join(os.getenv("DATA_DIR"), "training", "scores.txt")
+        # os.makedirs(os.path.dirname(score_file_path), exist_ok=True)
+        # if not os.path.exists(score_file_path):
+        #     with open(score_file_path, "w") as f:
+        #         f.write("edit_distance\n")
+        # with open(score_file_path, "a") as f:
+        #     f.write(f"{np.mean(scores)}\n")
+        
         return scores
 
     def configure_optimizers(self):
@@ -165,3 +173,19 @@ class Pix2Struct(pl.LightningModule):
 
     def val_dataloader(self):
         return self.val_data
+    
+    
+    
+    
+from pytorch_lightning.callbacks import Callback
+import os
+
+class LogValidationDistanceCallback(Callback):
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def on_validation_epoch_end(self, trainer, pl_module):
+        avg_edit_distance = trainer.callback_metrics.get('val_edit_distance')
+        if avg_edit_distance is not None:
+            with open(self.file_path, 'a') as file:
+                file.write(f'Epoch {trainer.current_epoch}: {avg_edit_distance:.4f}\n')

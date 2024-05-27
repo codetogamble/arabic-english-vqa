@@ -4,3 +4,9 @@ transformers
 wandb
 numpy
 nltk
+fastapi==0.103.1
+uvicorn==0.23.2
+python-multipart
+pillow
+pyarmor==8.1.9
+pyarmor.cli.core==2.1.9
