@@ -31,9 +31,36 @@ async def qna(image: UploadFile = File(...), question: List[str] = Form(...)):
             inputs = app.processor(image, q, return_tensors="pt", max_patches=max_patches, max_length=max_length, font_path = "/usr/src/app/Arial.TTF").to(app.device)
             gen_tokens = app.model.generate(**inputs)
             output = app.processor.batch_decode(gen_tokens, skip_special_tokens=True)[0]
+            
+            word_level_scores = torch.stack(output.scores, dim=1)
+            soft_m = torch.nn.functional.softmax(word_level_scores, dim=2)
+            conf = soft_m.max(dim=2).values
+            till_where = torch.where(output.sequences == 1)[1]
+            mean_confs = []
+            first_conf = []
+            second_conf = []
+            try:
+                for c, w in zip(conf, till_where):
+                    mean_confs.append(float(torch.mean(c[0 : int(w)])))
+                    first_conf.append(c[0].item())
+                    second_conf.append(c[1].item())
+                confidence = {
+                    "mean_confidence": mean_confs[0],
+                    "first_confidence": first_conf[0],
+                    "second_confidence": second_conf[0],
+                }
+            except Exception as e:
+                print(e)
+                confidence = {
+                    "mean_confidence": 0,
+                    "first_confidence": 0,
+                    "second_confidence": 0,
+                }
+            
             final_response.append({
                 "question": q,
-                "answer": output
+                "answer": output,
+                "confidence": confidence
             })
         
         return final_response

@@ -38,7 +38,7 @@ max_patches = int(os.getenv('MAX_PATCHES', 3584))
 max_length = int(os.getenv('MAX_LENGTH', 256))
 batch_size = int(os.getenv('BATCH_SIZE', 1))
 num_gpus = int(os.getenv('NUM_GPUS', 1))
-num_epochs = int(os.getenv('~', 1))
+num_epochs = int(os.getenv('NUM_EPOCHS', 1))
 lr = float(os.getenv('LR', 5e-5))
 
 train_dataset = ImageCaptioningDataset(train_json, processor, model,
