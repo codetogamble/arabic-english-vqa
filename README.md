@@ -41,10 +41,13 @@ docker run -it --rm   -v /home/ubuntu/pix2struct-vqa-dummy-data/edc_dummy_data:/
 
 
 ## Run inference
+
+
 ```bash
-docker run -p 80:80 --gpus all -e MODEL_PATH <PATH TO TRAINED MODEL> neuralspaceacr.azurecr.io/hrsd/ns-hrsd-qna uvicorn server:app --host 0.0.0.0 --port 80
+sudo docker run -p 8003:8003 --gpus all -v /home/elias/neuralspace/dataset/edc_dummy_data/training/model:/usr/src/model -e MODEL_PATH=/usr/src/model neuralspaceacr.azurecr.io/hrsd/ns-hrsd-qna:v1 uvicorn server:app --host 0.0.0.0 --port 8003
 
 ```
+
 Set the model path to the trained `model` folder. Once training is finished, it can be found inside `training` folder in the data folder. For using the default model, remove the `MODEL_PATH` environment variable from above command.
 
 

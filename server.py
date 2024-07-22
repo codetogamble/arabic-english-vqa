@@ -29,13 +29,13 @@ async def qna(image: UploadFile = File(...), question: List[str] = Form(...)):
         image = Image.open(io.BytesIO(image.file.read())).convert("RGB")
         for q in question:
             inputs = app.processor(image, q, return_tensors="pt", max_patches=max_patches, max_length=max_length, font_path = "/usr/src/app/Arial.TTF").to(app.device)
-            gen_tokens = app.model.generate(**inputs)
-            output = app.processor.batch_decode(gen_tokens, skip_special_tokens=True)[0]
+            gen_tokens = app.model.generate(**inputs,  max_new_tokens=max_length, return_dict_in_generate=True, output_scores=True, num_beams=1)
+            output = app.processor.batch_decode(gen_tokens.sequences, skip_special_tokens=True)[0]
             
-            word_level_scores = torch.stack(output.scores, dim=1)
+            word_level_scores = torch.stack(gen_tokens.scores, dim=1)
             soft_m = torch.nn.functional.softmax(word_level_scores, dim=2)
             conf = soft_m.max(dim=2).values
-            till_where = torch.where(output.sequences == 1)[1]
+            till_where = torch.where(gen_tokens.sequences == 1)[1]
             mean_confs = []
             first_conf = []
             second_conf = []
