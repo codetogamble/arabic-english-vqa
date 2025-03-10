@@ -1,0 +1,38 @@
+{
+  "_name_or_path": "sidharth16_finetuned_endocqa_finetuned_on_all_arabic_data_6epochs",
+  "architectures": [
+    "Pix2StructForConditionalGeneration"
+  ],
+  "batch_size": 32,
+  "decoder_start_token_id": 0,
+  "eos_token_id": 1,
+  "initializer_factor": 1.0,
+  "initializer_range": 0.02,
+  "is_encoder_decoder": true,
+  "is_vqa": false,
+  "max_length": 128,
+  "max_patches": 128,
+  "model_type": "pix2struct",
+  "pad_token_id": 0,
+  "pix2struct_config": {
+    "accumulate_grad_batches": 8,
+    "check_val_every_n_epoch": 1,
+    "gradient_clip_val": 1.0,
+    "lr": 0.0001,
+    "max_steps": 11250.0,
+    "num_warmup_steps": 0,
+    "verbose": true
+  },
+  "text_config": {
+    "initializer_range": 0.02,
+    "model_type": "pix2struct_text_model",
+    "vocab_size": 50356
+  },
+  "tie_word_embeddings": false,
+  "torch_dtype": "float32",
+  "transformers_version": "4.36.2",
+  "vision_config": {
+    "initializer_range": 0.02,
+    "model_type": "pix2struct_vision_model"
+  }
+}

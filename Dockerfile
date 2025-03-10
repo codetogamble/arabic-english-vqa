@@ -29,6 +29,7 @@ RUN apt-get update \
 RUN apt update
 
 
+
 ENV PYTHON_VERSION=3.8.17
 RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
 RUN tar -xf Python-${PYTHON_VERSION}.tgz
@@ -62,5 +63,6 @@ ENV MODEL_PATH=/usr/src/app/default_model
 
 RUN pyarmor-7 obfuscate finetune.py
 RUN rm finetune.py && rm utils.py
+RUN apt update && apt install poppler-utils -y
 
 EXPOSE 80

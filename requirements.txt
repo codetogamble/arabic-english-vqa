@@ -10,3 +10,4 @@ python-multipart
 pillow
 pyarmor==8.1.9
 pyarmor.cli.core==2.1.9
+pdf2image
