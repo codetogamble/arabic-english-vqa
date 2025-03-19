@@ -252,3 +252,23 @@ docker build -t your-image-name .
 ```bash
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
+Copy the output of the above command and set it as value in lic.py
+This key is used to encrypt and decrypt the license file and thus is critical that it should be different for different customers and saved separately.
+
+export this key in an environment variable called ENCRYPTION_KEY. Edit the python utility script `prepare_license_file.py` to set expiry, activation_date and usage.
+```bash
+export ENCRYPTION_KEY=<KEY>
+python utility_scripts/prepare_license_file.py
+```
+
+move the created license file into a folder and mount the folder while running the server like this:
+```bash
+docker run -it -p 9000:9000 -v /home/shubham/workspace/arabic-english-vqa/license/:/usr/src/app/license ns-arabic-vqa:latest bash -c "cd dist && uvicorn server_lic:app --host 0.0.0.0 --port 9000"
+```
+
+## Decoding license file
+Once a license file is received from the customer. In order to decode and check the remaining usage and status of the file you can run the following command.
+```bash
+export ENCRYPTION_KEY=<KEY>
+python utility_scripts/decode_lic.py --license license/license.txt
+```
