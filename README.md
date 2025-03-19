@@ -247,3 +247,8 @@ Rebuild the Docker Image: After updating the Dockerfile, rebuild your Docker ima
 ```bash
 docker build -t your-image-name .
 ```
+
+## Creating license file
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```

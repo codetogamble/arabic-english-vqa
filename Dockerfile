@@ -61,8 +61,9 @@ RUN mkdir /usr/src/data
 ENV DATA_DIR=/usr/src/data
 ENV MODEL_PATH=/usr/src/app/default_model
 
-RUN pyarmor-7 obfuscate finetune.py
-RUN rm finetune.py && rm utils.py
+RUN pyarmor-7 obfuscate finetune.py server_lic.py
+RUN rm *.py
+RUN rm Dockerfile
 RUN apt update && apt install poppler-utils -y
 
 EXPOSE 80
